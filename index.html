@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>تسليم الواجبات</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light;
+    --paper: #F3F6F4; --surface: #FFFFFF; --ink: #17201C; --muted: #55625B;
+    --line: #CFD8D2; --accent: #0E6B4E; --accent-ink: #FFFFFF; --accent-soft: #E2F0E9; --danger: #B42318;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --paper: #111714; --surface: #19211D; --ink: #E6EDE8; --muted: #9BA9A1;
+      --line: #2E3A34; --accent: #4CBC8E; --accent-ink: #0B1510; --accent-soft: #1C3228; --danger: #F97066;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink);
+         font-family: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif; font-size: 1rem; line-height: 1.75; }
+  main { max-width: 42rem; margin: 0 auto; padding: 3rem 1.25rem 4rem; }
+  header h1 { font-size: 2rem; line-height: 1.3; margin: 0 0 .4rem; font-weight: 700; }
+  header p  { margin: 0; color: var(--muted); max-width: 34rem; }
+
+  fieldset { border: 0; margin: 2.25rem 0 0; padding: 0; min-width: 0; }
+  legend   { font-size: 1.15rem; font-weight: 700; padding: 0; margin-bottom: 1rem; }
+  .field { margin-bottom: 1.15rem; }
+  .field > label, .label { display: block; font-weight: 500; margin-bottom: .35rem; }
+  .hint  { display: block; font-size: .875rem; color: var(--muted); margin-top: .3rem; }
+  .error { display: block; font-size: .875rem; color: var(--danger); margin-top: .3rem; }
+  .error:empty { display: none; }
+
+  input[type="text"] { width: 100%; font: inherit; padding: .7rem .9rem; border: 1.5px solid var(--line);
+                       border-radius: 10px; background: var(--surface); color: var(--ink); }
+  input[type="text"][dir="ltr"] { text-align: left; }
+  input[aria-invalid="true"] { border-color: var(--danger); }
+  input[type="text"]:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; }
+  @media (max-width: 560px) { .pair { grid-template-columns: 1fr; } }
+
+  .switch { display: inline-flex; border: 1.5px solid var(--line); border-radius: 10px; overflow: hidden;
+            background: var(--surface); margin-bottom: .6rem; }
+  .switch label { position: relative; cursor: pointer; }
+  .switch input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+  .switch span  { display: block; padding: .45rem 1.1rem; }
+  .switch input:checked + span { background: var(--accent); color: var(--accent-ink); font-weight: 500; }
+  .switch input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: -3px; }
+
+  .drops { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 560px) { .drops { grid-template-columns: 1fr; } }
+  .drop { position: relative; }
+  .drop input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  .drop label { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: .9rem; min-height: 7.5rem;
+                padding: 1rem 1.1rem; border: 2px dashed var(--line); border-radius: 14px; background: var(--surface);
+                cursor: pointer; transition: border-color .15s, background-color .15s; }
+  .drop .num { font-size: 3.6rem; font-weight: 700; line-height: 1; color: var(--line); transition: color .15s; }
+  .drop .title { display: block; font-weight: 700; }
+  .drop .state { display: block; font-size: .9rem; color: var(--muted); word-break: break-word; }
+  .drop.over label, .drop label:hover { border-color: var(--accent); }
+  .drop input:focus-visible + label { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .drop.has-file label { border-style: solid; border-color: var(--accent); background: var(--accent-soft); }
+  .drop.has-file .num { color: var(--accent); }
+  .drop.has-file .state { color: var(--ink); }
+  .drop.invalid label { border-color: var(--danger); }
+
+  .actions { margin-top: 2rem; }
+  button { width: 100%; font: inherit; font-weight: 700; font-size: 1.05rem; padding: .85rem 1rem; border: 0;
+           border-radius: 10px; background: var(--accent); color: var(--accent-ink); cursor: pointer; }
+  button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  button:disabled { opacity: .6; cursor: progress; }
+
+  .progress { margin-top: 1rem; display: none; }
+  .progress.on { display: block; }
+  .bar { height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; position: relative; }
+  .bar i { position: absolute; inset-block: 0; width: 35%; background: var(--accent); border-radius: 99px;
+           animation: slide 1.2s ease-in-out infinite; }
+  @keyframes slide { from { right: -35%; } to { right: 100%; } }
+  .progress p { margin: .4rem 0 0; font-size: .9rem; color: var(--muted); }
+
+  .alert { margin-top: 1rem; padding: .8rem 1rem; border-radius: 10px; border: 1.5px solid var(--danger);
+           color: var(--danger); background: var(--surface); }
+  .alert:empty { display: none; }
+
+  .done { display: none; margin-top: 2.5rem; padding: 1.75rem 1.5rem; border-radius: 14px;
+          background: var(--accent-soft); border: 2px solid var(--accent); }
+  .done h2 { margin: 0 0 .5rem; font-size: 1.4rem; }
+  .done dl { margin: 1rem 0; display: grid; grid-template-columns: auto 1fr; gap: .25rem 1rem; }
+  .done dt { color: var(--muted); }
+  .done dd { margin: 0; font-weight: 500; }
+  .done p  { margin: 0; color: var(--muted); }
+
+  .trap { position: absolute; inset-inline-start: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+    .bar i { animation: none; width: 100%; opacity: .5; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>تسليم الواجبات</h1>
+    <p>سجّلي بياناتك وارفعي ملف حل كل واجب. يُقبل ملف PDF أو Word أو صورة أو ZIP، بحد أقصى 10 ميجابايت للملف.</p>
+  </header>
+
+  <form id="form" novalidate>
+    <fieldset>
+      <legend>بياناتك</legend>
+      <div class="field">
+        <label for="serial">الرقم التسلسلي</label>
+        <input type="text" id="serial" name="serial" inputmode="numeric" autocomplete="off" required>
+        <span class="error" id="serial-error"></span>
+      </div>
+      <div class="pair">
+        <div class="field">
+          <label for="nameAr">الاسم بالعربية</label>
+          <input type="text" id="nameAr" name="nameAr" autocomplete="name" required>
+          <span class="error" id="nameAr-error"></span>
+        </div>
+        <div class="field">
+          <label for="nameEn">الاسم بالإنجليزية</label>
+          <input type="text" id="nameEn" name="nameEn" dir="ltr" lang="en" autocomplete="off" required>
+          <span class="error" id="nameEn-error"></span>
+        </div>
+      </div>
+      <div class="field">
+        <span class="label" id="idType-label">رقم الهوية</span>
+        <div class="switch" role="radiogroup" aria-labelledby="idType-label">
+          <label><input type="radio" name="idType" value="national" checked><span>رقم قومي</span></label>
+          <label><input type="radio" name="idType" value="passport"><span>جواز سفر</span></label>
+        </div>
+        <input type="text" id="idNumber" name="idNumber" dir="ltr" inputmode="numeric" autocomplete="off"
+               aria-labelledby="idType-label" aria-describedby="idNumber-hint" required>
+        <span class="hint" id="idNumber-hint">14 رقماً كما في البطاقة.</span>
+        <span class="error" id="idNumber-error"></span>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>ملفات الحل</legend>
+      <div class="drops">
+        <div class="drop" data-key="hw1">
+          <input type="file" id="hw1" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip" required>
+          <label for="hw1">
+            <span class="num" aria-hidden="true">1</span>
+            <span><span class="title">حل الواجب رقم 1</span><span class="state">اسحبي الملف هنا أو اضغطي للاختيار</span></span>
+          </label>
+          <span class="error" id="hw1-error"></span>
+        </div>
+        <div class="drop" data-key="hw2">
+          <input type="file" id="hw2" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip" required>
+          <label for="hw2">
+            <span class="num" aria-hidden="true">2</span>
+            <span><span class="title">حل الواجب رقم 2</span><span class="state">اسحبي الملف هنا أو اضغطي للاختيار</span></span>
+          </label>
+          <span class="error" id="hw2-error"></span>
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="trap" aria-hidden="true">
+      <label for="website">اتركي هذا الحقل فارغاً</label>
+      <input type="text" id="website" tabindex="-1" autocomplete="off">
+    </div>
+
+    <div class="actions">
+      <button type="submit" id="submit">إرسال الواجبات</button>
+      <div class="progress" id="progress" aria-live="polite">
+        <div class="bar"><i></i></div>
+        <p id="progress-text">جارٍ رفع الملفات…</p>
+      </div>
+      <div class="alert" id="alert" role="alert"></div>
+    </div>
+  </form>
+
+  <section class="done" id="done" tabindex="-1" aria-live="polite">
+    <h2>تم استلام واجباتك</h2>
+    <dl>
+      <dt>الرقم التسلسلي</dt><dd id="d-serial"></dd>
+      <dt>الاسم</dt><dd id="d-name"></dd>
+    </dl>
+    <p>احتفظي بلقطة شاشة لهذه الصفحة كإثبات للتسليم.</p>
+  </section>
+</main>
+
+<script>
+(function () {
+  // ضع هنا رابط الـ Web app من Apps Script (ينتهي بـ /exec)
+  var API_URL = 'https://script.google.com/macros/s/PASTE_YOUR_ID_HERE/exec';
+  var MAX_MB = 10;
+  var EXT = ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.zip'];
+  var form = document.getElementById('form');
+  var $ = function (id) { return document.getElementById(id); };
+
+  var clean = function (v) {
+    return v.trim()
+      .replace(/[\u0660-\u0669]/g, function (d) { return String(d.charCodeAt(0) - 0x0660); })
+      .replace(/[\u06F0-\u06F9]/g, function (d) { return String(d.charCodeAt(0) - 0x06F0); })
+      .replace(/\s+/g, ' ');
+  };
+  var idType = function () { return form.querySelector('input[name="idType"]:checked').value; };
+
+  var rules = {
+    serial:   function (v) { return /^\d{1,6}$/.test(v) || 'اكتبي الرقم التسلسلي بالأرقام فقط.'; },
+    nameAr:   function (v) { return /^[\u0600-\u06FF ]{3,100}$/.test(v) || 'اكتبي الاسم بالحروف العربية فقط.'; },
+    nameEn:   function (v) { return /^[A-Za-z .'-]{3,100}$/.test(v) || 'اكتبي الاسم بالحروف الإنجليزية فقط.'; },
+    idNumber: function (v) {
+      return idType() === 'national'
+        ? (/^\d{14}$/.test(v) || 'الرقم القومي يتكون من 14 رقماً.')
+        : (/^[A-Z0-9]{6,20}$/i.test(v) || 'رقم الجواز من 6 إلى 20 حرفاً أو رقماً إنجليزياً.');
+    }
+  };
+
+  function setError(key, msg) {
+    var err = $(key + '-error');
+    if (err) err.textContent = msg || '';
+    var input = $(key);
+    if (input && input.type === 'text') input.setAttribute('aria-invalid', msg ? 'true' : 'false');
+    var drop = form.querySelector('.drop[data-key="' + key + '"]');
+    if (drop) drop.classList.toggle('invalid', !!msg);
+  }
+  function result(r) { return r === true ? '' : r; }
+
+  function checkFile(key) {
+    var f = $(key).files[0];
+    if (!f) return 'ارفعي ملف الحل.';
+    var ext = f.name.slice(f.name.lastIndexOf('.')).toLowerCase();
+    if (EXT.indexOf(ext) === -1) return 'صيغة الملف غير مقبولة.';
+    if (f.size > MAX_MB * 1024 * 1024) return 'حجم الملف أكبر من ' + MAX_MB + ' ميجابايت.';
+    return true;
+  }
+
+  form.querySelectorAll('input[name="idType"]').forEach(function (r) {
+    r.addEventListener('change', function () {
+      var national = idType() === 'national';
+      $('idNumber').inputMode = national ? 'numeric' : 'text';
+      $('idNumber-hint').textContent = national ? '14 رقماً كما في البطاقة.' : 'كما هو مكتوب في جواز السفر.';
+      if ($('idNumber').value) setError('idNumber', result(rules.idNumber(clean($('idNumber').value))));
+    });
+  });
+
+  Object.keys(rules).forEach(function (key) {
+    $(key).addEventListener('blur', function (e) {
+      if (e.target.value) setError(key, result(rules[key](clean(e.target.value))));
+    });
+  });
+
+  function sizeText(b) {
+    return b < 1048576 ? Math.max(1, Math.round(b / 1024)) + ' ك.ب' : (b / 1048576).toFixed(1) + ' م.ب';
+  }
+  form.querySelectorAll('.drop').forEach(function (drop) {
+    var key = drop.dataset.key, input = $(key), state = drop.querySelector('.state');
+    function refresh() {
+      var f = input.files[0];
+      drop.classList.toggle('has-file', !!f);
+      state.textContent = f ? f.name + ' (' + sizeText(f.size) + ')، اضغطي لتغييره' : 'اسحبي الملف هنا أو اضغطي للاختيار';
+      if (f) setError(key, result(checkFile(key)));
+    }
+    input.addEventListener('change', refresh);
+    ['dragenter', 'dragover'].forEach(function (t) {
+      drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.add('over'); });
+    });
+    ['dragleave', 'drop'].forEach(function (t) {
+      drop.addEventListener(t, function () { drop.classList.remove('over'); });
+    });
+    drop.addEventListener('drop', function (e) {
+      e.preventDefault();
+      if (!e.dataTransfer.files.length) return;
+      var dt = new DataTransfer();
+      dt.items.add(e.dataTransfer.files[0]);
+      input.files = dt.files;
+      refresh();
+    });
+  });
+
+  function readFile(file) {
+    return new Promise(function (resolve, reject) {
+      var r = new FileReader();
+      r.onload = function () {
+        resolve({ name: file.name, type: file.type || 'application/octet-stream', b64: String(r.result).split(',')[1] });
+      };
+      r.onerror = function () { reject(r.error); };
+      r.readAsDataURL(file);
+    });
+  }
+
+  var btn = $('submit');
+  function busy(on, text) {
+    btn.disabled = on;
+    btn.textContent = on ? 'جارٍ الإرسال…' : 'إرسال الواجبات';
+    $('progress').classList.toggle('on', on);
+    if (text) $('progress-text').textContent = text;
+  }
+  function fail(msg) { busy(false); if (msg) $('alert').textContent = msg; }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    $('alert').textContent = '';
+
+    var first = null, values = {};
+    Object.keys(rules).forEach(function (key) {
+      values[key] = clean($(key).value);
+      var r = rules[key](values[key]);
+      setError(key, result(r));
+      if (r !== true && !first) first = $(key);
+    });
+    ['hw1', 'hw2'].forEach(function (key) {
+      var r = checkFile(key);
+      setError(key, result(r));
+      if (r !== true && !first) first = $(key);
+    });
+    if (first) { first.focus(); return; }
+
+    busy(true, 'جارٍ تجهيز الملفات…');
+
+    Promise.all([readFile($('hw1').files[0]), readFile($('hw2').files[0])]).then(function (files) {
+      $('progress-text').textContent = 'جارٍ رفع الملفات، قد يستغرق ذلك دقيقة. لا تغلقي الصفحة.';
+      // text/plain يمنع طلب CORS المسبق، وApps Script يرد بـ JSON
+      return fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          serial: values.serial, nameAr: values.nameAr, nameEn: values.nameEn,
+          idType: idType(), idNumber: values.idNumber.toUpperCase(),
+          website: $('website').value,
+          hw1: files[0], hw2: files[1]
+        })
+      }).then(function (r) { return r.json(); }).then(function (res) {
+        if (res && res.ok) {
+          $('d-serial').textContent = values.serial;
+          $('d-name').textContent = values.nameAr;
+          form.style.display = 'none';
+          $('done').style.display = 'block';
+          $('done').focus();
+          return;
+        }
+        if (res && res.errors) {
+          fail('');
+          var focusEl = null;
+          Object.keys(res.errors).forEach(function (k) { setError(k, res.errors[k]); focusEl = focusEl || $(k); });
+          if (focusEl) focusEl.focus();
+          return;
+        }
+        fail((res && res.message) || 'تعذّر حفظ التسليم الآن. حاولي مرة أخرى بعد قليل.');
+      }, function () {
+        fail('تعذّر رفع الملفات. تأكدي من الإنترنت وأعيدي الإرسال.');
+      });
+    }).catch(function () {
+      fail('تعذّرت قراءة أحد الملفات. اختاريه مرة أخرى.');
+    });
+  });
+})();
+</script>
+</body>
+</html>
